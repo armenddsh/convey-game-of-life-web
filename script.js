@@ -1,11 +1,48 @@
 /*
   - Convey Game Of Life -
 */
+let interval;
 
 const containerElement = document.getElementById("container");
+const startElement = document.getElementById("start");
+const stopElement = document.getElementById("stop");
+const resetElement = document.getElementById("reset");
+
 const rows = 50;
 const cols = 50;
 const probability = 0.8;
+const intervalTime = 1000;
+let cells = initalize(containerElement);
+
+startElement.addEventListener("click", () => {
+  if (!interval) {
+    if (containerElement) {
+      if (Array.from(cells.values()).filter((f) => f).length === 0) {
+        cells = createRandom(cells);
+      }
+    }
+    interval = setInterval(() => {
+      render(cells);
+      cells = start(cells);
+    }, intervalTime);
+  }
+});
+
+stopElement.addEventListener("click", () => {
+  if (interval) {
+    clearInterval(interval);
+    interval = null;
+  }
+});
+
+resetElement.addEventListener("click", () => {
+  if (interval) {
+    clearInterval(interval);
+    interval = null;
+  }
+
+  cells = reset(cells);
+});
 
 function initalize(container) {
   const cells = new Map();
@@ -85,6 +122,21 @@ function start(cells) {
   return nextIterationCells;
 }
 
+function reset(cells) {
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      const id = `${i}-${j}`;
+      const el = document.getElementById(id);
+      if (el.classList.contains("alive")) {
+        el.classList.remove("alive");
+      }
+      cells.set(id, false);
+    }
+  }
+
+  return cells;
+}
+
 function createRandom(cells) {
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
@@ -115,15 +167,4 @@ function render(cells) {
       }
     }
   }
-}
-
-if (containerElement) {
-  let cells = initalize(containerElement);
-
-  cells = createRandom(cells);
-
-  setInterval(() => {
-    cells = start(cells);
-    render(cells);
-  }, 1000);
 }
