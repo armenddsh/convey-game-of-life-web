@@ -3,16 +3,52 @@
 */
 let interval;
 
-const containerElement = document.getElementById("container");
+const probability = 0.8;
+const containerName = "grid";
+
+const containerElement = document.getElementById(containerName);
 const startElement = document.getElementById("start");
 const stopElement = document.getElementById("stop");
 const resetElement = document.getElementById("reset");
+const rowElement = document.getElementById("row");
+const colElement = document.getElementById("col");
+const intervalElement = document.getElementById("interval");
 
-const rows = 50;
-const cols = 50;
-const probability = 0.8;
-const intervalTime = 1000;
-let cells = initalize(containerElement);
+let rows = rowElement.value || 50;
+let cols = colElement.value || 50;
+let intervalTime = intervalElement.value || 500;
+
+let cells = initialize(containerElement);
+
+rowElement.addEventListener("change", (event) => {
+  if (interval) {
+    _clearInterval();
+  }
+
+  rows = parseInt(event.target.value);
+  clearBox(containerName);
+  cells = initialize(containerElement);
+});
+
+colElement.addEventListener("change", (event) => {
+  if (interval) {
+    _clearInterval();
+  }
+
+  cols = parseInt(event.target.value);
+  clearBox(containerName);
+  cells = initialize(containerElement);
+});
+
+intervalElement.addEventListener("change", (event) => {
+  if (interval) {
+    _clearInterval();
+  }
+
+  intervalTime = parseInt(event.target.value);
+  clearBox(containerName);
+  cells = initialize(containerElement);
+});
 
 startElement.addEventListener("click", () => {
   if (!interval) {
@@ -30,21 +66,28 @@ startElement.addEventListener("click", () => {
 
 stopElement.addEventListener("click", () => {
   if (interval) {
-    clearInterval(interval);
-    interval = null;
+    _clearInterval();
   }
 });
 
 resetElement.addEventListener("click", () => {
   if (interval) {
-    clearInterval(interval);
-    interval = null;
+    _clearInterval();
   }
 
   cells = reset(cells);
 });
 
-function initalize(container) {
+function _clearInterval() {
+  clearInterval(interval);
+  interval = null;
+}
+
+function clearBox(elementId) {
+  document.getElementById(elementId).innerHTML = "";
+}
+
+function initialize(container) {
   const cells = new Map();
 
   for (let i = 0; i < rows; i++) {

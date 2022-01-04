@@ -13,11 +13,28 @@
     <div id="app">
         <div id="container">
             <div class="controls">
-                <div>
+                <div class="controls__inputs">
+                    <div class="control">
+                        <label for="row">R:</label>
+                        <input id="row" type="number" min="10" max="100" value="50">
+                    </div>
+                    <div class="control">
+                        <label for="col">C:</label>
+                        <input id="col" type="number" min="10" max="100" value="50">
+                    </div>
+                    <div class="control">
+                        <label for="interval">Interval:</label>
+                        <input id="interval" type="number" min="100" max="1000" step="50" value="500">
+                    </div>
+                </div>
+                <div class="controls__buttons">
                     <button class="btn" id="start">Start</button>
                     <button class="btn" id="stop">Stop</button>
                     <button class="btn" id="reset">Reset</button>
                 </div>
+            </div>
+            <div id="grid">
+
             </div>
         </div>
     </div>

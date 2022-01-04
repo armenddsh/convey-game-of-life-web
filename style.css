@@ -1,4 +1,6 @@
-*,*::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -35,7 +37,7 @@
 
 .controls {
   display: flex;
-  flex-direction: row-reverse;
+  justify-content: space-between;
   margin: 5px 0;
 }
 
@@ -43,4 +45,21 @@
   width: 70px;
   height: 20px;
   outline: none;
+}
+
+.controls__inputs {
+  display: flex;
+}
+
+.control {
+  margin-left: 5px;
+}
+
+.control > input {
+  width: 3.2rem;
+}
+
+#grid {
+  display: grid;
+  place-content: center;
 }
