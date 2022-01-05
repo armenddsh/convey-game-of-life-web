@@ -1,8 +1,10 @@
 /*
   - Convey Game Of Life -
 */
-let interval;
 
+// ========= Constants ==========
+
+let interval;
 const probability = 0.8;
 const containerName = "grid";
 
@@ -14,12 +16,19 @@ const rowElement = document.getElementById("row");
 const colElement = document.getElementById("col");
 const intervalElement = document.getElementById("interval");
 
+let drawing = false;
 let rows = rowElement.value || 50;
 let cols = colElement.value || 50;
 let intervalTime = intervalElement.value || 500;
 
-let cells = initialize(containerElement);
+let cells = new Map();
+cells = initialize(containerElement);
 
+// ========= Event Listeners ==========
+
+/**
+ * Change rows button click
+ */
 rowElement.addEventListener("change", (event) => {
   if (interval) {
     _clearInterval();
@@ -30,6 +39,9 @@ rowElement.addEventListener("change", (event) => {
   cells = initialize(containerElement);
 });
 
+/**
+ * Change columns button click
+ */
 colElement.addEventListener("change", (event) => {
   if (interval) {
     _clearInterval();
@@ -40,6 +52,9 @@ colElement.addEventListener("change", (event) => {
   cells = initialize(containerElement);
 });
 
+/**
+ * Change interval button click
+ */
 intervalElement.addEventListener("change", (event) => {
   if (interval) {
     _clearInterval();
@@ -50,6 +65,9 @@ intervalElement.addEventListener("change", (event) => {
   cells = initialize(containerElement);
 });
 
+/**
+ * Start button click, start game
+ */
 startElement.addEventListener("click", () => {
   if (!interval) {
     if (containerElement) {
@@ -64,12 +82,18 @@ startElement.addEventListener("click", () => {
   }
 });
 
+/**
+ * Stop button click, stop game
+ */
 stopElement.addEventListener("click", () => {
   if (interval) {
     _clearInterval();
   }
 });
 
+/**
+ * Reset button click, reset game
+ */
 resetElement.addEventListener("click", () => {
   if (interval) {
     _clearInterval();
@@ -78,18 +102,61 @@ resetElement.addEventListener("click", () => {
   cells = reset(cells);
 });
 
+// ========= Functions ==========
+
+/**
+ * Stop the timer
+ */
 function _clearInterval() {
   clearInterval(interval);
   interval = null;
 }
 
+/**
+ * Clear box, clears an element
+ * @param {*} elementId
+ */
 function clearBox(elementId) {
   document.getElementById(elementId).innerHTML = "";
 }
 
-function initialize(container) {
-  const cells = new Map();
+/**
+ * User leave cells
+ * @param {event} event
+ */
+function pointerup(event) {
+  event.preventDefault();
+  drawing = false;
+}
 
+/**
+ * User moves on cell
+ * @param {event} event
+ */
+function pointermove(event) {
+  event.preventDefault();
+  if (drawing) {
+    cells.set(event.target.id, true);
+    render(cells);
+  }
+}
+
+/**
+ * User clicks on cell
+ * @param {event} event
+ */
+function pointerdown(event) {
+  event.preventDefault();
+  cells.set(event.target.id, true);
+  drawing = true;
+  render(cells);
+}
+
+/**
+ * Initalize game
+ * @param {container} element
+ */
+function initialize(container) {
   for (let i = 0; i < rows; i++) {
     const row = document.createElement("div");
     row.classList.add("row");
@@ -98,6 +165,11 @@ function initialize(container) {
     for (let j = 0; j < cols; j++) {
       const id = `${i}-${j}`;
       const cell = document.createElement("span");
+
+      cell.addEventListener("pointerup", pointerup);
+      cell.addEventListener("pointermove", pointermove);
+      cell.addEventListener("pointerdown", pointerdown);
+
       cell.classList.add("cell");
       cell.id = id;
       cells.set(id, null);
@@ -108,6 +180,11 @@ function initialize(container) {
   return cells;
 }
 
+/**
+ * Start game
+ * @param {*} cells
+ * @returns
+ */
 function start(cells) {
   const nextIterationCells = new Map();
 
@@ -140,31 +217,46 @@ function start(cells) {
 
       const countAlive = _cells.filter((f) => f).length;
 
-      /*
-        Rules:
-          A live cell dies if it has fewer than two live neighbors.
-          A live cell with more than three live neighbors dies.
-          A live cell with two or three live neighbors lives on to the next generation.
-          A dead cell will be brought back to live if it has exactly three live neighbors.
-      */
-      if (cell) {
-        // live cell
-        if (countAlive < 2 || countAlive > 3) {
-          nextIterationCells.set(id, false);
-        } else if (countAlive === 2 || countAlive === 3) {
-          nextIterationCells.set(id, true);
-        }
-      } else {
-        if (countAlive === 3) {
-          nextIterationCells.set(id, true);
-        }
-      }
+      checkRules(cell, countAlive, id, nextIterationCells);
     }
   }
 
   return nextIterationCells;
 }
 
+/**
+ * Check rules
+ * @param {*} cell
+ * @param {*} countAlive
+ * @param {*} id
+ */
+function checkRules(cell, countAlive, id, nextIterationCells ) {
+  /*
+    Rules:
+      A live cell dies if it has fewer than two live neighbors.
+      A live cell with more than three live neighbors dies.
+      A live cell with two or three live neighbors lives on to the next generation.
+      A dead cell will be brought back to live if it has exactly three live neighbors.
+  */
+
+  if (cell) {
+    if (countAlive < 2 || countAlive > 3) {
+      nextIterationCells.set(id, false);
+    } else if (countAlive === 2 || countAlive === 3) {
+      nextIterationCells.set(id, true);
+    }
+  } else {
+    if (countAlive === 3) {
+      nextIterationCells.set(id, true);
+    }
+  }
+}
+
+/**
+ * Reset all cells
+ * @param {*} cells
+ * @returns
+ */
 function reset(cells) {
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
@@ -180,6 +272,11 @@ function reset(cells) {
   return cells;
 }
 
+/**
+ * Create random cells
+ * @param {*} cells
+ * @returns
+ */
 function createRandom(cells) {
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
@@ -196,12 +293,15 @@ function createRandom(cells) {
   return cells;
 }
 
+/**
+ * Render cells
+ * @param {*} cells
+ */
 function render(cells) {
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
       const id = `${i}-${j}`;
       const cell = cells.get(id);
-      console.log(id, cell);
       const el = document.getElementById(id);
       if (cell) {
         el.classList.add("alive");
